@@ -1,10 +1,10 @@
-import socket
+import socket as s
 import struct
 
 port = 4444
 
-serversocket = socket.socket()
-serversocket.bind((serversocket.gethostname(), port))
+serversocket = s.socket()
+serversocket.bind((s.gethostname(), port))
 serversocket.listen()
 
 socket, addr = serversocket.accept()
