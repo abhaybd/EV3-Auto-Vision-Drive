@@ -9,7 +9,7 @@ serversocket.listen()
 
 socket, addr = serversocket.accept()
 
-def recieve(msg_len):
+def recieve(socket, msg_len):
     chunks = []
     bytes_recd = 0
     while bytes_recd < msg_len:
@@ -21,8 +21,8 @@ def recieve(msg_len):
     return b''.join(chunks)
 
 while True:
-    msg_len = recieve(4)
+    msg_len = recieve(socket, 4)
     msg_len = struct.unpack('i', msg_len)[0]
-    img_data = recieve(msg_len)
+    img_data = recieve(socket, msg_len)
     
     
