@@ -1,9 +1,8 @@
-package com.coolioasjulio.webcam;
+package com.coolioasjulio.fll.webcam;
+
 import org.bytedeco.javacv.*;
 
 import static org.bytedeco.javacpp.opencv_core.IplImage;
-import static org.bytedeco.javacpp.opencv_core.cvFlip;
-
 
 
 public class WebcamTest implements Runnable {
@@ -24,9 +23,6 @@ public class WebcamTest implements Runnable {
                 Frame frame = grabber.grab();
 
                 img = converter.convert(frame);
-
-                //the grabbed frame will be flipped, re-flip to make it right
-                // cvFlip(img, img, 1);// l-r = 90_degrees_steps_anti_clockwise
 
                 canvas.showImage(converter.convert(img));
 

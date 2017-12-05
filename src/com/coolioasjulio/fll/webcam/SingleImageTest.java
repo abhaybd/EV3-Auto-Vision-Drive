@@ -1,4 +1,4 @@
-package com.coolioasjulio.webcam;
+package com.coolioasjulio.fll.webcam;
 
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.CanvasFrame;

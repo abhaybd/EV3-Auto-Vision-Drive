@@ -7,5 +7,7 @@
 	<classpathentry kind="lib" path="libs/javacv.jar"/>
 	<classpathentry kind="lib" path="libs/opencv-windows-x86_64.jar"/>
 	<classpathentry kind="lib" path="libs/videoinput-windows-x86_64.jar"/>
+	<classpathentry kind="lib" path="libs/opencv.jar"/>
+	<classpathentry kind="lib" path="libs/videoinput.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
