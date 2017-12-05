@@ -10,6 +10,8 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 public class VisionDrive {
 	
 	public static final int ERROR_THRESHOLD = 10;
+	public static final int CAMERA_FOV_HORIZONTAL = 75;
+	public static final int CAMERA_FOV_VERTICAL = 47;
 	
 	public static void main(String[] args){
 		
@@ -35,8 +37,14 @@ public class VisionDrive {
 						out.write(bytes);
 						out.flush();
 						
-						int messageLength = in.readInt();
-						int[] data = readInts(in, messageLength);
+						int xMin = in.readInt();
+						int yMin = in.readInt();
+						int xMax = in.readInt();
+						int yMax = in.readInt();
+						
+						double targetHeading = getTargetHeading(image.width(), xMin, xMax);
+						double targetAOE = getTargetAOE(image.height(), yMin, yMax);
+						
 						consecutiveErrors = 0;
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -52,6 +60,22 @@ public class VisionDrive {
 		});
 		thread.start();
 		return thread;
+	}
+	
+	private double getTargetHeading(int imageWidth, int xMin, int xMax){
+		double halfWidth = (double)imageWidth/2d;
+		double dist = halfWidth / Math.atan((double)CAMERA_FOV_HORIZONTAL/2d);
+		double center = (double)(xMin+xMax)/2d;
+		double offset = Math.abs(center - halfWidth);
+		return Math.atan(offset/dist);
+	}
+	
+	private double getTargetAOE(int imageHeight, int yMin, int yMax){
+		double halfHeight = (double)imageHeight/2d;
+		double dist = halfHeight / Math.atan((double)CAMERA_FOV_HORIZONTAL/2d);
+		double center = (double)(yMin+yMax)/2d;
+		double offset = Math.abs(center - halfHeight);
+		return Math.atan(offset/dist);
 	}
 	
 	private int[] readInts(DataInputStream in, int messageLength) throws IOException{
