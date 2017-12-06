@@ -24,3 +24,4 @@ while True:
     msg_len = recieve(socket, 4)
     msg_len = struct.unpack('!i', msg_len)[0]
     img_data = recieve(socket, msg_len)
+    
