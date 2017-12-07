@@ -7,20 +7,68 @@ import java.net.Socket;
 
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
+import lejos.robotics.RegulatedMotor;
+import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import lejos.hardware.port.MotorPort;
+
 public class VisionDrive {
 	
-	public static final int ERROR_THRESHOLD = 10;
+	public static final int CONSECUTIVE_ERROR_THRESHOLD = 10;
 	public static final double CAMERA_FOV_HORIZONTAL = 70.42;
 	public static final double CAMERA_FOV_VERTICAL = 43.3;
 	
-	public static void main(String[] args){
-		
+	public static final double TURN_RADIUS = 5;
+	public static final double MOTOR_CIRCUMFERENCE = 2;
+	
+	public static final double HEADING_ERROR_THRESHOLD = 2;
+	
+	public static final String SERVER_IP = "10.0.0.1";
+	public static final int SERVER_PORT = 4444;
+	
+	public static void main(String[] args) throws IOException{
+		VisionDrive vd = new VisionDrive(0);
+		vd.startDriving(SERVER_IP, SERVER_PORT);
 	}
 	
 	private int device;
+	private Odometry currentOdometry;
 	private Odometry targetOdometry;
+	private RegulatedMotor leftMotor, rightMotor;
+	
 	public VisionDrive(int device){
 		this.device = device;
+		currentOdometry = new Odometry(0,0);
+		targetOdometry = new Odometry(0,0);
+		leftMotor = new EV3LargeRegulatedMotor(MotorPort.B);
+		rightMotor = new EV3LargeRegulatedMotor(MotorPort.C);
+	}
+	
+	public void startDriving(String server, int port) throws IOException {
+		Thread t = startVisionThread(server,port);
+		while(true) {
+			double headingError = Math.abs(targetOdometry.getHeading() - currentOdometry.getHeading());
+			if(headingError <= HEADING_ERROR_THRESHOLD) {
+				leftMotor.forward();
+				rightMotor.forward();
+			} else {
+				leftMotor.stop();
+				rightMotor.stop();
+				rotate(targetOdometry.getHeading());
+			}
+		}
+	}
+	
+	public Odometry rotate(double degrees) {
+		if(degrees == 0) {
+			return currentOdometry;
+		}
+		double circumference = 2d * TURN_RADIUS * Math.PI;
+		double rotationDistance = (degrees * circumference)/360d;
+		double motorDegrees = rotationDistance / MOTOR_CIRCUMFERENCE;
+		leftMotor.rotate((int) (motorDegrees * Math.abs(degrees)/degrees), true);
+		rightMotor.rotate((int) (-motorDegrees * Math.abs(degrees)/degrees), false);
+		currentOdometry.setOdometry(currentOdometry.getHeading() + degrees, currentOdometry.getHeading());
+		return currentOdometry;
 	}
 	
 	public Thread startVisionThread(String hostname, int port) throws IOException{
@@ -52,7 +100,7 @@ public class VisionDrive {
 					} catch (IOException e) {
 						e.printStackTrace();
 						consecutiveErrors++;
-						if(consecutiveErrors >= ERROR_THRESHOLD){
+						if(consecutiveErrors >= CONSECUTIVE_ERROR_THRESHOLD){
 							System.exit(-1);
 						}
 					}
