@@ -54,6 +54,8 @@ boxes, scores, classes = yolo_eval(
     score_threshold=score_threshold,
     iou_threshold=iou_threshold)
 def get_pred(image, target_class):
+    if type(image) == np.ndarray:
+        image = Image.fromarray(image)
     if is_fixed_size:  # TODO: When resizing we can use minibatch input.
         resized_image = image.resize(
             tuple(reversed(model_image_size)), Image.BICUBIC)
