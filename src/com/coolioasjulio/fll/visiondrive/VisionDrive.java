@@ -5,8 +5,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import org.bytedeco.javacpp.opencv_core.IplImage;
-
 import lejos.robotics.RegulatedMotor;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.port.MotorPort;
@@ -26,17 +24,15 @@ public class VisionDrive {
 	public static final int SERVER_PORT = 4444;
 	
 	public static void main(String[] args) throws IOException{
-		VisionDrive vd = new VisionDrive(0);
+		VisionDrive vd = new VisionDrive();
 		vd.startDriving(SERVER_IP, SERVER_PORT);
 	}
 	
-	private int device;
 	private Odometry currentOdometry;
 	private Odometry targetOdometry;
 	private RegulatedMotor leftMotor, rightMotor;
 	
-	public VisionDrive(int device){
-		this.device = device;
+	public VisionDrive(){
 		currentOdometry = new Odometry(0,0);
 		targetOdometry = new Odometry(0,0);
 		leftMotor = new EV3LargeRegulatedMotor(MotorPort.B);
@@ -82,9 +78,7 @@ public class VisionDrive {
 							int consecutiveErrors = 0;
 							while(!Thread.interrupted()){
 								try {
-									socket.getInputStream();
-									IplImage image = ImageUtils.captureImage(device);
-									byte[] bytes = ImageUtils.getBytes(image);
+									byte[] bytes = ImageUtils.captureImage();
 									out.writeInt(bytes.length);
 									out.write(bytes);
 									out.flush();
@@ -94,8 +88,8 @@ public class VisionDrive {
 									int xMax = in.readInt();
 									int yMax = in.readInt();
 									
-									double targetHeading = getTargetHeading(image.width(), xMin, xMax);
-									double targetAOE = getTargetAOE(image.height(), yMin, yMax);
+									double targetHeading = getTargetHeading(ImageUtils.imageWidth(), xMin, xMax);
+									double targetAOE = getTargetAOE(ImageUtils.imageHeight(), yMin, yMax);
 									
 									targetOdometry.setOdometry(targetHeading, targetAOE);
 									

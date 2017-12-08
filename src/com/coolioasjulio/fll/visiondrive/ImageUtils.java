@@ -1,48 +1,54 @@
 package com.coolioasjulio.fll.visiondrive;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
-import org.bytedeco.javacpp.opencv_core.IplImage;
-import org.bytedeco.javacv.Frame;
-import org.bytedeco.javacv.FrameGrabber;
-import org.bytedeco.javacv.OpenCVFrameConverter;
-import org.bytedeco.javacv.VideoInputFrameGrabber;
+import lejos.hardware.BrickFinder;
+import lejos.hardware.ev3.EV3;
+import lejos.hardware.video.Video;
 
 public class ImageUtils {
+	private static boolean setup = false;
+	private static Video video;
+	
 	/**
-	 * Capture image from specified webcam
-	 * @param device Webcam index to use
-	 * @return IplImage captured from specified webcam
-	 * @throws IOException If error occurs accessing webcam
+	 * Open webcam with specified resolution
+	 * @param width
+	 * @param height
+	 * @throws IOException
 	 */
-	public static IplImage captureImage(int device) throws IOException{
-		try (FrameGrabber grabber = new VideoInputFrameGrabber(device)){
-        	OpenCVFrameConverter.ToIplImage converter = new OpenCVFrameConverter.ToIplImage();
-        	IplImage img;
-            grabber.start();
-            Frame frame = grabber.grab();
-            img = converter.convert(frame);
-            return img;
-        } catch (IOException e) {
-			e.printStackTrace();
-			throw e;
+	public static void setup(int width, int height) throws IOException{
+		EV3 ev3 = (EV3) BrickFinder.getLocal();
+		video = ev3.getVideo();
+		video.open(width, height);
+	}
+	
+	/**
+	 * Open webcam with 1280x720 resolution
+	 * @throws IOException
+	 */
+	public static void setup() throws IOException{
+		setup(1280, 720);
+	}
+	
+	public static int imageWidth(){
+		return video.getWidth();
+	}
+	
+	public static int imageHeight(){
+		return video.getHeight();
+	}
+	
+	public static byte[] captureImage() throws IOException{
+		setupIfNot();
+		byte[] frame = video.createFrame();
+		video.grabFrame(frame);
+		return frame;
+	}
+	
+	private static void setupIfNot() throws IOException{
+		if(!setup){
+			setup();
 		}
-	}
-	
-	/**
-	 * Capture image from webcam, using default webcam. (index 0)
-	 * @return IplImage captured from webcam 0
-	 * @throws IOException If error occurs accessing webcam
-	 */
-	public static IplImage captureImage() throws IOException{
-		return captureImage(0);
-	}
-	
-	public static byte[] getBytes(IplImage image){
-		ByteBuffer buff = image.asByteBuffer();
-		byte[] bytes = new byte[buff.remaining()];
-		buff.get(bytes);
-		return bytes;
+		setup = true;
 	}
 }
