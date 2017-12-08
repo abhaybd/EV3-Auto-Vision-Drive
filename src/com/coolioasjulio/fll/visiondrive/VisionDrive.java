@@ -71,43 +71,47 @@ public class VisionDrive {
 		return currentOdometry;
 	}
 	
-	public Thread startVisionThread(String hostname, int port) throws IOException{
-		Thread thread = new Thread(()->{
-			try(Socket socket = new Socket(hostname, port)){
-				DataInputStream in = new DataInputStream(socket.getInputStream());
-				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-				int consecutiveErrors = 0;
-				while(!Thread.interrupted()){
-					try {
-						socket.getInputStream();
-						IplImage image = ImageUtils.captureImage(device);
-						byte[] bytes = ImageUtils.getBytes(image);
-						out.writeInt(bytes.length);
-						out.write(bytes);
-						out.flush();
-						
-						int xMin = in.readInt();
-						int yMin = in.readInt();
-						int xMax = in.readInt();
-						int yMax = in.readInt();
-						
-						double targetHeading = getTargetHeading(image.width(), xMin, xMax);
-						double targetAOE = getTargetAOE(image.height(), yMin, yMax);
-						
-						targetOdometry.setOdometry(targetHeading, targetAOE);
-						
-						consecutiveErrors = 0;
-					} catch (IOException e) {
-						e.printStackTrace();
-						consecutiveErrors++;
-						if(consecutiveErrors >= CONSECUTIVE_ERROR_THRESHOLD){
-							System.exit(-1);
+	public Thread startVisionThread(final String hostname, final int port) throws IOException{
+		Thread thread = new Thread(
+				new Runnable(){
+					@Override
+					public void run(){
+						try(Socket socket = new Socket(hostname, port)){
+							DataInputStream in = new DataInputStream(socket.getInputStream());
+							DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+							int consecutiveErrors = 0;
+							while(!Thread.interrupted()){
+								try {
+									socket.getInputStream();
+									IplImage image = ImageUtils.captureImage(device);
+									byte[] bytes = ImageUtils.getBytes(image);
+									out.writeInt(bytes.length);
+									out.write(bytes);
+									out.flush();
+									
+									int xMin = in.readInt();
+									int yMin = in.readInt();
+									int xMax = in.readInt();
+									int yMax = in.readInt();
+									
+									double targetHeading = getTargetHeading(image.width(), xMin, xMax);
+									double targetAOE = getTargetAOE(image.height(), yMin, yMax);
+									
+									targetOdometry.setOdometry(targetHeading, targetAOE);
+									
+									consecutiveErrors = 0;
+								} catch (IOException e) {
+									e.printStackTrace();
+									consecutiveErrors++;
+									if(consecutiveErrors >= CONSECUTIVE_ERROR_THRESHOLD){
+										System.exit(-1);
+									}
+								}
+							}
+						} catch (IOException e1) {
+							e1.printStackTrace();
 						}
 					}
-				}
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
 		});
 		thread.start();
 		return thread;
