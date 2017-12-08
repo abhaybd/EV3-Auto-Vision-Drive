@@ -33,9 +33,26 @@ def bytes_to_img(arr, width, height):
     arr = [int(b) for b in arr]
     img = []
     for i in range(0,len(arr),3):
-        img.append(arr[i:i+3])
+        img.append(yuv_to_rgb(*arr[i:i+3]))
     img = np.array(img).reshape((width, height,3))
     return img;
+
+def clamp(num, low, high):
+    return min(max(num,low),high)
+
+# TODO: Figure out unwrapping and converting
+
+def yuv_to_rgb(y,u,v):
+    c = y-16
+    d = u-128
+    e = v-128
+    r = (298*c+409*e+128)/256
+    g = (298*c-100*d-208*e+128)/256
+    b = (298*c+516*d+128)/256
+    r = clamp(r,0,255)
+    g = clamp(g,0,255)
+    b = clamp(b,0,255)
+    return r, g, b
 
 while True:
     # Recieve image dimensions

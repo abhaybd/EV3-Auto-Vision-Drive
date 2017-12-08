@@ -76,7 +76,7 @@ public class VisionDrive {
 							DataInputStream in = new DataInputStream(socket.getInputStream());
 							DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 							int consecutiveErrors = 0;
-							ImageCapture imageCapture = new ImageCapture();
+							ImageCapture imageCapture = new ImageCapture(160, 120);
 							while(!Thread.interrupted()){
 								try {
 									byte[] bytes = imageCapture.captureImage();
