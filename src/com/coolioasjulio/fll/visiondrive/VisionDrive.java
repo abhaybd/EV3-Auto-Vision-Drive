@@ -76,9 +76,10 @@ public class VisionDrive {
 							DataInputStream in = new DataInputStream(socket.getInputStream());
 							DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 							int consecutiveErrors = 0;
+							ImageCapture imageCapture = new ImageCapture();
 							while(!Thread.interrupted()){
 								try {
-									byte[] bytes = ImageUtils.captureImage();
+									byte[] bytes = imageCapture.captureImage();
 									out.writeInt(bytes.length);
 									out.write(bytes);
 									out.flush();
@@ -88,8 +89,8 @@ public class VisionDrive {
 									int xMax = in.readInt();
 									int yMax = in.readInt();
 									
-									double targetHeading = getTargetHeading(ImageUtils.imageWidth(), xMin, xMax);
-									double targetAOE = getTargetAOE(ImageUtils.imageHeight(), yMin, yMax);
+									double targetHeading = getTargetHeading(imageCapture.imageWidth(), xMin, xMax);
+									double targetAOE = getTargetAOE(imageCapture.imageHeight(), yMin, yMax);
 									
 									targetOdometry.setOdometry(targetHeading, targetAOE);
 									
