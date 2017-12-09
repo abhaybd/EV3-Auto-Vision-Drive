@@ -26,14 +26,16 @@ def recieve_int(socket):
     return struct.unpack('!i', recieve(socket, 4))[0]
 
 def send_int(socket, num):
-    socket.sendall(struct.pack('!I',num))
+    socket.sendall(struct.pack('!i',num))
 
 def bytes_to_img(arr, width, height):
-    assert width*height*3 == len(arr)
-    arr = [int(b) for b in arr]
-    img = []
-    for i in range(0,len(arr),3):
-        img.append(yuv_to_rgb(*arr[i:i+3]))
+    img = np.zeros((height, width,3), dtype=np.float32)
+    for i in range(0,len(arr),4):
+        y1,u,y2,v = [int(a) for a in arr[i:i+4]]
+        x = (i % (width * 2)) / 2
+        y = i / (width * 2)
+        img[y,x] = yuv_to_rgb(y1,u,v)
+        img[y,x+1] = yuv_to_rgb(y2,u,v)
     img = np.array(img).reshape((width, height,3))
     return img;
 

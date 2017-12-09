@@ -28,8 +28,8 @@ public class VisionDrive {
 		vd.startDriving(SERVER_IP, SERVER_PORT);
 	}
 	
-	private Odometry currentOdometry;
-	private Odometry targetOdometry;
+	private Odometry currentOdometry; // currentOdometry is in absolute degrees.
+	private Odometry targetOdometry; // targetOdometry is in relative degrees to currentOdometry.
 	private RegulatedMotor leftMotor, rightMotor;
 	
 	public VisionDrive(){
@@ -42,7 +42,7 @@ public class VisionDrive {
 	public void startDriving(String server, int port) throws IOException {
 		Thread t = startVisionThread(server,port);
 		while(true) {
-			double headingError = Math.abs(targetOdometry.getHeading() - currentOdometry.getHeading());
+			double headingError = Math.abs(targetOdometry.getHeading());
 			if(headingError <= HEADING_ERROR_THRESHOLD) {
 				leftMotor.forward();
 				rightMotor.forward();
@@ -113,6 +113,9 @@ public class VisionDrive {
 	}
 	
 	private double getTargetHeading(int imageWidth, int xMin, int xMax){
+		if(xMin == -1 && xMax == -1){
+			return 0d;
+		}
 		double halfWidth = (double)imageWidth/2d;
 		double dist = halfWidth / Math.atan(CAMERA_FOV_HORIZONTAL/2d);
 		double center = (double)(xMin+xMax)/2d;
@@ -121,6 +124,9 @@ public class VisionDrive {
 	}
 	
 	private double getTargetAOE(int imageHeight, int yMin, int yMax){
+		if(yMin == -1 && yMax == -1){
+			return 0d;
+		}
 		double halfHeight = (double)imageHeight/2d;
 		double dist = halfHeight / Math.atan(CAMERA_FOV_HORIZONTAL/2d);
 		double center = (double)(yMin+yMax)/2d;
