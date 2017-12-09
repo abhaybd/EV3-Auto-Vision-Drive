@@ -8,6 +8,7 @@ import java.net.Socket;
 import lejos.robotics.RegulatedMotor;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.port.MotorPort;
+import lejos.hardware.Button;
 
 public class VisionDrive {
 	
@@ -50,6 +51,10 @@ public class VisionDrive {
 				leftMotor.stop();
 				rightMotor.stop();
 				rotate(targetOdometry.getHeading());
+			}
+			if(Button.ESCAPE.isDown()) {
+				t.interrupt();
+				break;
 			}
 		}
 	}
