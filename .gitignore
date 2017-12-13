@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# leJOS created jar files
+/*.jar
+
 # Distribution / packaging
 .Python
 env/
