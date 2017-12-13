@@ -2,12 +2,23 @@ import socket as s
 import struct
 import numpy as np
 import yolo
+import threading
 
 port = 4444
 
 serversocket = s.socket()
 serversocket.bind((s.gethostname(), port))
 serversocket.listen()
+
+def udp_thread():
+    udp_sock = s.socket(s.AF_INET, s.SOCK_DGRAM)
+    while True:
+        msg, addr = udp_sock.recvfrom(32)
+        udp_sock.sendto(msg, addr)
+        
+thread = threading.Thread(target = udp_thread, args=())
+thread.daemon = True
+thread.start()
 
 socket, addr = serversocket.accept()
 
@@ -41,8 +52,6 @@ def bytes_to_img(arr, width, height):
 def clamp(num, low, high):
     return min(max(num,low),high)
 
-# TODO: Figure out unwrapping and converting
-
 def yuv_to_rgb(y,u,v):
     c = y-16
     d = u-128
@@ -54,6 +63,7 @@ def yuv_to_rgb(y,u,v):
     g = clamp(g,0,255)
     b = clamp(b,0,255)
     return r, g, b
+
 
 while True:
     # Recieve image dimensions
