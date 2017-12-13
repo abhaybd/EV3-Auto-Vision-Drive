@@ -85,6 +85,9 @@ public class VisionDrive {
 							while(!Thread.interrupted()){
 								try {
 									byte[] bytes = imageCapture.captureImage();
+									out.writeInt(imageCapture.imageWidth());
+									out.writeInt(imageCapture.imageHeight());
+									out.flush();
 									out.writeInt(bytes.length);
 									out.write(bytes);
 									out.flush();

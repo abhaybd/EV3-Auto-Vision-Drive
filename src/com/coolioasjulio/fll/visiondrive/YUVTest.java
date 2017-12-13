@@ -15,8 +15,12 @@ public class YUVTest {
 		
 		Socket socket = new Socket("192.168.1.87", 4444);
 		DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+		out.writeInt(ic.imageWidth());
+		out.writeInt(ic.imageHeight());
+		out.flush();
 		out.writeInt(bytes.length);
 		out.write(bytes);
+		out.flush();
 		socket.close();
 	}
 }

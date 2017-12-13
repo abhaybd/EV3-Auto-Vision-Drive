@@ -9,7 +9,9 @@ serversocket = s.socket()
 serversocket.bind((s.gethostname(), port))
 serversocket.listen()
 
+print('Waiting for connection...')
 socket, addr = serversocket.accept()
+print('Connected!')
 
 def recieve(socket, msg_len):
     chunks = []
@@ -55,21 +57,11 @@ def yuv_to_rgb(y,u,v):
     b = clamp(b,0,255)
     return r, g, b
 
-while True:
-    # Recieve image dimensions
-    global img_width, img_height, img_data
-    img_width = recieve_int(socket)
-    img_height = recieve_int(socket)
-    
-    # Recieve image bytes and convert to np array
-    msg_len = recieve_int(socket)
-    raw_data = recieve(socket, msg_len)
-    img_data = bytes_to_img(raw_data, img_width, img_height)
-    
-    # Recieve tuple of bounding box values from yolo network
-    # Tuple is in the form (xmin, ymin, xmax, ymax)
-    # Then send all the values
-    bound_box = yolo.get_pred(img_data, 'person')
-    for val in bound_box:
-        send_int(socket, val)
-    
+img_width = recieve_int(socket)
+img_height = recieve_int(socket)
+
+# Recieve image bytes and convert to np array
+msg_len = recieve_int(socket)
+raw_data = recieve(socket, msg_len)
+img_data = bytes_to_img(raw_data, img_width, img_height)
+img_data /= 255.

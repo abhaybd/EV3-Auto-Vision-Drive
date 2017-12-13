@@ -13,6 +13,9 @@ public class ServerTest {
 		Socket socket = serverSocket.accept();
 		System.out.println("Connected!");
 		DataInputStream in = new DataInputStream(socket.getInputStream());
+		int width = in.readInt();
+		int height = in.readInt();
+		System.out.println("Image is " + width + "x" + height);
 		int length = in.readInt();
 		System.out.println("Recieving " + length + " bytes");
 		byte[] bytes = new byte[length];
