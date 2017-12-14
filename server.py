@@ -13,7 +13,7 @@ serversocket.listen()
 def udp_thread():
     udp_sock = s.socket(s.AF_INET, s.SOCK_DGRAM)
     while True:
-        msg, addr = udp_sock.recvfrom(32)
+        msg, addr = udp_sock.recvfrom(256)
         udp_sock.sendto(msg, addr)
         
 thread = threading.Thread(target = udp_thread, args=())

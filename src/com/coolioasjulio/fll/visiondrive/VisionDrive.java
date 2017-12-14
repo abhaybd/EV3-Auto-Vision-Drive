@@ -3,6 +3,7 @@ package com.coolioasjulio.fll.visiondrive;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 
 import lejos.robotics.RegulatedMotor;
@@ -21,7 +22,7 @@ public class VisionDrive {
 	
 	public static final double HEADING_ERROR_THRESHOLD = 2;
 	
-	public static final String SERVER_IP = "10.0.0.1";
+	public static final String SERVER_IP = null;
 	public static final int SERVER_PORT = 4444;
 	
 	public static void main(String[] args) throws IOException{
@@ -41,7 +42,13 @@ public class VisionDrive {
 	}
 	
 	public void startDriving(String server, int port) throws IOException {
-		Thread t = startVisionThread(server,port);
+		Thread t;
+		if(server == null){
+			t = startVisionThread(port);
+		}
+		else{
+			t = startVisionThread(server,port);
+		}
 		while(true) {
 			double headingError = Math.abs(targetOdometry.getHeading());
 			if(headingError <= HEADING_ERROR_THRESHOLD) {
@@ -70,6 +77,11 @@ public class VisionDrive {
 		rightMotor.rotate((int) (-motorDegrees * Math.abs(degrees)/degrees), false);
 		currentOdometry.setOdometry(currentOdometry.getHeading() + degrees, currentOdometry.getHeading());
 		return currentOdometry;
+	}
+	
+	public Thread startVisionThread(int port) throws IOException{
+		final InetAddress server = NetworkUtils.pingAll(NetworkUtils.calculateSubnet());
+		return startVisionThread(server.getHostAddress(), port);
 	}
 	
 	public Thread startVisionThread(final String hostname, final int port) throws IOException{

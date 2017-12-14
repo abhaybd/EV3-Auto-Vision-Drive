@@ -1,13 +1,26 @@
 import socket as s
 import struct
 import numpy as np
-import yolo
+import threading
 
 port = 4444
 
 serversocket = s.socket()
 serversocket.bind((s.gethostname(), port))
 serversocket.listen()
+
+def udp_thread():
+    udp_sock = s.socket(s.AF_INET, s.SOCK_DGRAM)
+    udp_sock.bind((s.gethostname(),4445))
+    print('Waiting for udp message!')
+    while True:
+        msg, addr = udp_sock.recvfrom(256)
+        print('Recieved {} from {}'.format(msg, addr))
+        udp_sock.sendto(msg, addr)
+        
+thread = threading.Thread(target = udp_thread, args=())
+thread.daemon = True
+thread.start()
 
 print('Waiting for connection...')
 socket, addr = serversocket.accept()

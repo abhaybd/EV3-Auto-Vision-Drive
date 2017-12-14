@@ -13,10 +13,10 @@ public class ConvertTest {
 	public static final int WIDTH = 176;
 	public static final int HEIGHT = 144;
 	public static void main(String[] args) throws IOException{
-		//FileInputStream in = new FileInputStream("img.yuv");
 		DataInputStream in = new DataInputStream(new FileInputStream("img.yuv"));
 		byte[] bytes = new byte[50688];
 		in.readFully(bytes);
+		in.close();
 		
 		BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
 		for(int i = 0; i < bytes.length; i+=4){
@@ -35,8 +35,6 @@ public class ConvertTest {
 		frame.add(label);
 		frame.pack();
 		frame.setVisible(true);
-		
-		
 	}
 	
     static int convertYUVtoARGB(int y, int u, int v) {
