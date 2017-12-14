@@ -1,6 +1,6 @@
 # FLL-Vision-Drive
 
-This is a Lego Mindstorms EV3 Robot, using LeJOS EV3 to run Java, intelligently navigating using a webcam, powered by deep learning.
+This is a Lego Mindstorms EV3 Robot, using LeJOS EV3 to run Java, intelligently navigating using a webcam, powered by deep learning. The computer runs python, to enable easy access to the deep learning models.
 
 It uses a YOLO network, a specialized type of convolutional neural network to detect and find the location of objects within an image.
 
