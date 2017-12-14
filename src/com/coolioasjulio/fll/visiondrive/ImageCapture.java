@@ -53,7 +53,7 @@ public class ImageCapture {
 	 * @throws IOException
 	 */
 	public byte[] captureImage() throws IOException{
-		video.grabFrame(frame); // TODO: Figure out how the image is wrapped
+		video.grabFrame(frame);
 		return frame;
 	}
 }

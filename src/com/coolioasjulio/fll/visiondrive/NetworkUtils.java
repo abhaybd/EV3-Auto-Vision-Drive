@@ -18,15 +18,45 @@ public class NetworkUtils {
 		System.out.println(server.toString());
 	}
 	
-	public static Subnet calculateSubnet() throws IOException{
+	/**
+	 * Calculate subnet of the first network interface. Return as Subnet object.
+	 * @return Subnet object representing subnet of first network interface.
+	 * @throws IOException
+	 */
+	public static Subnet calculateSubnet() throws IOException {
+		return calculateSubnet(0);
+	}
+	
+	/**
+	 * Calculate subnet of the network index at the specified index.
+	 * @param index Index of network interface in networkInterface.getInterfaceAddresses().get()
+	 * @return Subnet object representing subnet of the specified network interface.
+	 * @throws IOException
+	 */
+	public static Subnet calculateSubnet(int index) throws IOException {
 		InetAddress localHost = Inet4Address.getLocalHost();
 		NetworkInterface networkInterface = NetworkInterface.getByInetAddress(localHost);
 		InterfaceAddress addr = networkInterface.getInterfaceAddresses().get(0);
 		InetAddress minIp = calculateMinIp(addr.getAddress(), addr.getNetworkPrefixLength());
 		int[] range = calculateRange(addr.getNetworkPrefixLength());
-		return new Subnet(minIp, range);
+		return new Subnet(minIp, range);		
 	}
 	
+	/**
+	 * Automatically calculate subnet and continuously send udp packets to every machine on the subnet. Stop as soon as one replies, since that's the server.
+	 * @return InetAddress of server
+	 * @throws IOException
+	 */
+	public static InetAddress pingAll() throws IOException {
+		return pingAll(calculateSubnet());
+	}
+	
+	/**
+	 * Send udp packets to every machine on specified subnet. Stop as soon as a machine responds, as that is the server.
+	 * @param subnet Subnet object to scan and send messages to
+	 * @return InetAddress of server
+	 * @throws IOException
+	 */
 	public static InetAddress pingAll(final Subnet subnet) throws IOException{
 		final DatagramSocket dataSocket = new DatagramSocket();
 		Thread send = new Thread(new Runnable(){
