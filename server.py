@@ -12,6 +12,8 @@ serversocket.listen()
 
 def udp_thread():
     udp_sock = s.socket(s.AF_INET, s.SOCK_DGRAM)
+    udp_sock.bind((s.gethostname(),4445))
+    print('Waiting for udp ping!')
     while True:
         msg, addr = udp_sock.recvfrom(256)
         udp_sock.sendto(msg, addr)
