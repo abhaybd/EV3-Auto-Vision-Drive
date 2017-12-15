@@ -14,11 +14,15 @@ import lejos.hardware.Button;
 public class VisionDrive {
 	
 	public static final int CONSECUTIVE_ERROR_THRESHOLD = 10;
+	
+	// Get from spec sheet of webcam
 	public static final double CAMERA_FOV_HORIZONTAL = 70.42;
 	public static final double CAMERA_FOV_VERTICAL = 43.3;
 	
-	public static final double TURN_RADIUS = 5;
-	public static final double MOTOR_CIRCUMFERENCE = 2;
+	// Measured specs on the robot
+	public static final double TURN_RADIUS = 5; // Half the distance between the treads
+	public static final double MOTOR_DIAMETER = 2; // Diameter of motor wheel
+	public static final double MOTOR_CIRCUMFERENCE = Math.PI * MOTOR_DIAMETER;
 	
 	public static final double HEADING_ERROR_THRESHOLD = 2;
 	
