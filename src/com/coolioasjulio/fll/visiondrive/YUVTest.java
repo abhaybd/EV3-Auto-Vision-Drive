@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 
+import lejos.hardware.Button;
 import lejos.hardware.lcd.LCD;
 
 public class YUVTest {
@@ -13,7 +14,7 @@ public class YUVTest {
 		byte[] bytes = ic.captureImage();
 		
 		
-		InetAddress addr = NetworkUtils.pingAll(NetworkUtils.calculateSubnet());
+		InetAddress addr = NetworkUtils.pingAll(4445);
 		LCD.drawString(addr.toString(), 0, 0);
 		Socket socket = new Socket(addr, 4444);
 		DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -25,6 +26,8 @@ public class YUVTest {
 		out.flush();
 		socket.close();
 		
-		Thread.sleep(10000);
+		while(Button.ENTER.isUp()){
+			
+		}
 	}
 }

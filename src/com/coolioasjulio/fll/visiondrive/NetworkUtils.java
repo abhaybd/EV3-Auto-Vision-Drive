@@ -8,13 +8,12 @@ import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 
 public class NetworkUtils {
 	public static void main(String[] args) throws IOException{
 		Subnet sub = calculateSubnet();
 		System.out.println(sub.minIp.toString());
-		InetAddress server = pingAll(sub);
+		InetAddress server = pingAll(sub, 4445);
 		System.out.println(server.toString());
 	}
 	
@@ -47,8 +46,8 @@ public class NetworkUtils {
 	 * @return InetAddress of server
 	 * @throws IOException
 	 */
-	public static InetAddress pingAll() throws IOException {
-		return pingAll(calculateSubnet());
+	public static InetAddress pingAll(int serverPort) throws IOException {
+		return pingAll(calculateSubnet(), serverPort);
 	}
 	
 	/**
@@ -57,7 +56,7 @@ public class NetworkUtils {
 	 * @return InetAddress of server
 	 * @throws IOException
 	 */
-	public static InetAddress pingAll(final Subnet subnet) throws IOException{
+	public static InetAddress pingAll(final Subnet subnet, final int serverPort) throws IOException{
 		final DatagramSocket dataSocket = new DatagramSocket();
 		Thread send = new Thread(new Runnable(){
 			@Override
@@ -73,7 +72,7 @@ public class NetworkUtils {
 									try {
 										InetAddress addr = InetAddress.getByAddress(
 												new byte[]{(byte)a,(byte)b,(byte)c,(byte) d});
-										DatagramPacket packet = new DatagramPacket(buf,256,addr,4445);
+										DatagramPacket packet = new DatagramPacket(buf,256,addr,serverPort);
 										dataSocket.send(packet);
 									} catch (UnknownHostException e) {
 										e.printStackTrace();

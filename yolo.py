@@ -32,7 +32,6 @@ yolo_model = load_model(model_path)
 # Verify model, anchors, and classes are compatible
 num_classes = len(class_names)
 num_anchors = len(anchors)
-# TODO: Assumes dim ordering is channel last
 model_output_channels = yolo_model.layers[-1].output_shape[-1]
 assert model_output_channels == num_anchors * (num_classes + 5), \
     'Mismatch between model and given anchor and class sizes. ' \
@@ -45,7 +44,6 @@ model_image_size = yolo_model.layers[0].input_shape[1:3]
 is_fixed_size = model_image_size != (None, None)
 
 # Generate output tensor targets for filtered bounding boxes.
-# TODO: Wrap these backend operations with Keras layers.
 yolo_outputs = yolo_head(yolo_model.output, anchors, len(class_names))
 input_image_shape = K.placeholder(shape=(2, ))
 boxes, scores, classes = yolo_eval(
@@ -88,26 +86,29 @@ def get_pred(image, target_class):
     for i, c in reversed(list(enumerate(out_classes))):
         predicted_class = class_names[c]
         box = out_boxes[i]
-        score = out_scores[i]
+        # score = out_scores[i]
         if predicted_class != target_class:
             continue
-        label = '{} {:.2f}'.format(predicted_class, score)
+        # label = '{} {:.2f}'.format(predicted_class, score)
 
         ymin, xmin, ymax, xmax = box
         ymin = max(0, np.floor(ymin + 0.5).astype('int32'))
         xmin = max(0, np.floor(xmin + 0.5).astype('int32'))
         ymax = min(image.size[1], np.floor(ymax + 0.5).astype('int32'))
         xmax = min(image.size[0], np.floor(xmax + 0.5).astype('int32'))
-        print(label, (xmin, ymin), (xmax, ymax))
-        preds.append([predicted_class, score, (xmin, ymin, xmax, ymax)])
+        # print(label, (xmin, ymin), (xmax, ymax))
+        preds.append((xmin, ymin, xmax, ymax))
     if len(preds) == 0:
+        last_pred = None
         return -1,-1,-1,-1
     global last_pred
-    if type(last_pred) != np.ndarray:
-        biggest = max(preds, key=lambda x: (x[2][2]-x[2][0])**2+(x[2][3]-x[2][1])**2)[2]
+    if type(last_pred) != np.ndarray: # If there isn't a previous prediction
+        # Pick bounding box with largest area
+        biggest = max(preds, key=lambda x: (x[2]-x[0])*(x[3]-x[1]))
         last_pred = np.array(biggest)
         return biggest
-    else:
-        closest = min(preds, key=lambda x: np.linalg.norm(last_pred-np.array(x[2])))[2]
+    else: # If there is a previous prediction
+        # Pick bounding box with the smallest euclidian distance from the last predicted bounding box
+        closest = min(preds, key=lambda x: np.linalg.norm(last_pred-np.array(x)))
         last_pred = np.array(closest)
         return closest
