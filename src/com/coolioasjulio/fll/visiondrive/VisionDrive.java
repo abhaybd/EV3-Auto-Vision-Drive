@@ -68,9 +68,9 @@ public class VisionDrive {
 		while(true) {
 			double headingError = Math.abs(targetOdometry.getHeading());
 			if(headingError <= RobotInfo.HEADING_ERROR_THRESHOLD) {
-				leftMotor.forward();
-				rightMotor.forward();
-				shooterElevationMotor.rotateTo((int)targetOdometry.getAOE(), true);
+				leftMotor.backward();
+				rightMotor.backward();
+				//shooterElevationMotor.rotateTo((int)-targetOdometry.getAOE(), true);
 				fireIfReady();
 			} else {
 				leftMotor.stop();
@@ -86,7 +86,7 @@ public class VisionDrive {
 	
 	private void fireIfReady() {
 		if(shooterTimer.elapsed() >= RobotInfo.FIRE_RATE){
-			int speed = (int) (power.getVoltage() * 600);
+			int speed = (int) (power.getVoltage() * 65);
 			shooterMotor.setSpeed(speed);
 			shooterMotor.rotate(RobotInfo.DEGREES_PER_SHOT);
 			shooterTimer.reset();

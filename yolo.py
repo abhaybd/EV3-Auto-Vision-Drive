@@ -7,8 +7,8 @@ from PIL import Image
 
 from yad2k.models.keras_yolo import yolo_eval, yolo_head
 
-global last_pred
 last_pred = None
+global last_pred
 
 model_path = 'model_data/yolo.h5'
 assert model_path.endswith('.h5'), 'Keras model must be a .h5 file.'
@@ -52,10 +52,12 @@ boxes, scores, classes = yolo_eval(
     score_threshold=score_threshold,
     iou_threshold=iou_threshold)
 def get_pred(image, target_class):
+    """
     if type(image) == np.ndarray:
         image = Image.fromarray(image)
     elif not issubclass(type(image),Image.Image):
         raise Exception('image must be of type PIL.Image.Image')
+    """
     if is_fixed_size:
         resized_image = image.resize(
             tuple(reversed(model_image_size)), Image.BICUBIC)

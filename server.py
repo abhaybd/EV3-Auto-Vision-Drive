@@ -16,13 +16,27 @@ def udp_thread():
     print('Waiting for udp ping!')
     while True:
         msg, addr = udp_sock.recvfrom(256)
+        print('Recieved udp ping from {}!'.format(addr))
         udp_sock.sendto(msg, addr)
+
+def debug_thead():
+    debug_serversock = s.socket()
+    debug_serversock.bind((s.gethostname(), 4443))
+    
+    debug_sock, addr = debug_serversock.accept()
+    while True:
+        msg_len = recieve_int(debug_sock)
+        msg = recieve(msg_len)
+        print(str(msg))
+    
         
 thread = threading.Thread(target = udp_thread, args=())
 thread.daemon = True
 thread.start()
 
+print('Waiting for TCP connection...')
 socket, addr = serversocket.accept()
+print('Recieved TCP connection from {}!'.format(addr))
 
 def recieve(socket, msg_len):
     chunks = []
@@ -82,6 +96,7 @@ while True:
     # Tuple is in the form (xmin, ymin, xmax, ymax)
     # Then send all the values
     bound_box = yolo.get_pred(img_data, 'person')
+    print('Found {} in image!'.format(bound_box))
     for val in bound_box:
         send_int(socket, val)
     
