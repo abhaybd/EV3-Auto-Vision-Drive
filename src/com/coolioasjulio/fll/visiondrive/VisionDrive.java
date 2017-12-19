@@ -70,7 +70,7 @@ public class VisionDrive {
 			if(headingError <= RobotInfo.HEADING_ERROR_THRESHOLD) {
 				leftMotor.backward();
 				rightMotor.backward();
-				//shooterElevationMotor.rotateTo((int)-targetOdometry.getAOE(), true);
+				shooterElevationMotor.rotateTo((int)-targetOdometry.getAOE(), true);
 				fireIfReady();
 			} else {
 				leftMotor.stop();

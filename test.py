@@ -2,6 +2,7 @@ import socket as s
 import struct
 import numpy as np
 import threading
+import yolo
 
 port = 4444
 
@@ -15,7 +16,7 @@ def udp_thread():
     print('Waiting for udp message!')
     while True:
         msg, addr = udp_sock.recvfrom(256)
-        print('Recieved {} from {}'.format(msg, addr))
+        print('Recieved udp message from {}'.format(addr))
         udp_sock.sendto(msg, addr)
         
 thread = threading.Thread(target = udp_thread, args=())
@@ -56,8 +57,6 @@ def bytes_to_img(arr, width, height):
 def clamp(num, low, high):
     return min(max(num,low),high)
 
-# TODO: Figure out unwrapping and converting
-
 def yuv_to_rgb(y,u,v):
     c = y-16
     d = u-128
@@ -70,11 +69,17 @@ def yuv_to_rgb(y,u,v):
     b = clamp(b,0,255)
     return r, g, b
 
-img_width = recieve_int(socket)
-img_height = recieve_int(socket)
-
-# Recieve image bytes and convert to np array
-msg_len = recieve_int(socket)
-raw_data = recieve(socket, msg_len)
-img_data = bytes_to_img(raw_data, img_width, img_height)
-img_data /= 255.
+images = []
+while True:
+    img_width = recieve_int(socket)
+    img_height = recieve_int(socket)
+    
+    # Recieve image bytes and convert to np array
+    msg_len = recieve_int(socket)
+    raw_data = recieve(socket, msg_len)
+    img_data = bytes_to_img(raw_data, img_width, img_height)
+    
+    images.append(img_data/255)
+    
+    bounds = yolo.get_pred(img_data, 'person')
+    print('Pred: {}'.format(bounds))
