@@ -27,6 +27,7 @@ public class RobotInfo {
 	// Server variables
 	//
 	public static final String SERVER_IP = null;
-	public static final int SERVER_PORT = 4444; // Port for main TCP communication
+	public static final int SERVER_DBG_PORT = 4443; // Port for debug TCP communication
+	public static final int SERVER_TCP_PORT = 4444; // Port for main TCP communication
 	public static final int SERVER_UDP_PORT = 4445; // Port for intial UDP discovery server
 }

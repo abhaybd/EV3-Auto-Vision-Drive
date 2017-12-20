@@ -3,6 +3,7 @@ package com.coolioasjulio.fll.visiondrive;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -19,15 +20,24 @@ public class VisionDrive {
 	
 	public static void main(String[] args) throws IOException{
 		VisionDrive vd = new VisionDrive();
-		vd.startDriving(RobotInfo.SERVER_PORT, RobotInfo.SERVER_UDP_PORT);
+		vd.startDriving(RobotInfo.SERVER_TCP_PORT, RobotInfo.SERVER_UDP_PORT);
 	}
 	
+	// Odometry objects
 	private Odometry currentOdometry; // currentOdometry is in absolute degrees.
 	private Odometry targetOdometry; // targetOdometry is in relative degrees to currentOdometry.
+	
+	// Motors
 	private RegulatedMotor leftMotor, rightMotor;
 	private RegulatedMotor shooterElevationMotor, shooterMotor;
+	
+	// LeJOS utilities
 	private Stopwatch shooterTimer;
 	private Power power;
+	
+	// Debug
+	private Socket debugSocket;
+	private DataOutputStream debugStream;
 	
 	public VisionDrive(){
 		currentOdometry = new Odometry(0,0);
@@ -56,13 +66,14 @@ public class VisionDrive {
 	 * @param udpPort UDP port of the server, only used to find the server, then TCP is used.
 	 * @throws IOException
 	 */
-	public void startDriving(String server, int port, int udpPort) throws IOException {
+	public void startDriving(String hostname, int port, int udpPort) throws IOException {
 		Thread t;
-		if(server == null){
-			t = startVisionThread(udpPort, port);
+		if(hostname == null){
+			InetAddress server = NetworkUtils.pingAll(udpPort);
+			t = startVisionThread(server.getHostAddress(), port);
 		}
 		else{
-			t = startVisionThread(server,port);
+			t = startVisionThread(hostname, port);
 		}
 		shooterTimer = new Stopwatch();
 		while(true) {
@@ -78,15 +89,48 @@ public class VisionDrive {
 				rotate(targetOdometry.getHeading());
 			}
 			if(Button.ESCAPE.isDown()) {
+				debug("Closing!");
 				t.interrupt();
 				break;
 			}
 		}
 	}
 	
+	private void setUpDebug() throws IOException{
+		setUpDebug(NetworkUtils.pingAll(RobotInfo.SERVER_UDP_PORT));
+	}
+	
+	private void setUpDebug(InetAddress server) throws IOException{
+		debugSocket = new Socket(server, RobotInfo.SERVER_DBG_PORT);
+		debugStream = new DataOutputStream(debugSocket.getOutputStream());
+	}
+	
+	private void debug(String message) throws IOException{
+		if(debugStream == null){
+			try {
+				setUpDebug();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		try {
+			byte[] bytes = message.getBytes("UTF-8");
+			debugStream.writeInt(bytes.length);
+			debugStream.write(bytes);
+			debugStream.flush();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private void fireIfReady() {
 		if(shooterTimer.elapsed() >= RobotInfo.FIRE_RATE){
 			int speed = (int) (power.getVoltage() * 65);
+			try {
+				debug("Shooting at speed: " + speed);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			shooterMotor.setSpeed(speed);
 			shooterMotor.rotate(RobotInfo.DEGREES_PER_SHOT);
 			shooterTimer.reset();
@@ -105,11 +149,6 @@ public class VisionDrive {
 		currentOdometry.setOdometry(currentOdometry.getHeading() + degrees, currentOdometry.getAOE());
 		targetOdometry.setOdometry(0, targetOdometry.getAOE());
 		return currentOdometry;
-	}
-	
-	private Thread startVisionThread(int udpPort, int port) throws IOException{
-		final InetAddress server = NetworkUtils.pingAll(udpPort);
-		return startVisionThread(server.getHostAddress(), port);
 	}
 	
 	private Thread startVisionThread(final String hostname, final int port) throws IOException{
@@ -141,7 +180,8 @@ public class VisionDrive {
 									double targetAOE = getTargetAOE(imageCapture.imageHeight(), yMin, yMax);
 									
 									targetOdometry.setOdometry(targetHeading, targetAOE);
-									
+									debug(String.format("Detected bounding box: %s,%s,%s,%s", xMin,yMin,xMax,yMax));
+									debug(String.format("New targetHeading: %.2f - New targetAOE: %.2f", targetHeading, targetAOE));
 									consecutiveErrors = 0;
 								} catch (IOException e) {
 									e.printStackTrace();

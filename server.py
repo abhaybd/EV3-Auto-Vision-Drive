@@ -3,6 +3,7 @@ import struct
 import numpy as np
 import yolo
 import threading
+from datetime import datetime
 
 port = 4444
 
@@ -27,9 +28,11 @@ def debug_thead():
     while True:
         msg_len = recieve_int(debug_sock)
         msg = recieve(msg_len)
-        print(str(msg))
-    
-        
+        print('Debug: {} - {}'.format(now(), msg.decode('utf-8')))
+
+def now():
+    return datetime.now().strftime('%m-%d-%Y %I:%M %p')
+
 thread = threading.Thread(target = udp_thread, args=())
 thread.daemon = True
 thread.start()
