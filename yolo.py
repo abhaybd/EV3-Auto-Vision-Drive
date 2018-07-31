@@ -8,7 +8,6 @@ from PIL import Image
 from yad2k.models.keras_yolo import yolo_eval, yolo_head
 
 last_pred = None
-global last_pred
 
 model_path = 'model_data/yolo.h5'
 assert model_path.endswith('.h5'), 'Keras model must be a .h5 file.'
@@ -65,9 +64,10 @@ def get_pred(image, target_class):
         # width and height as multiples of 32.
         new_image_size = (image.width - (image.width % 32),
                           image.height - (image.height % 32))
-        resized_image = image.resize(new_image_size, Image.BICUBIC)
-        image_data = np.array(resized_image, dtype='float32')
-        print(image_data.shape)
+        if (image.width,image.height) != new_image_size:
+            resized_image = image.resize(new_image_size, Image.BICUBIC)
+            image_data = np.array(resized_image, dtype='float32')
+            print(image_data.shape)
 
     image_data /= 255.
     image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
@@ -101,7 +101,6 @@ def get_pred(image, target_class):
     if len(preds) == 0:
         last_pred = None
         return -1,-1,-1,-1
-    global last_pred
     if type(last_pred) != np.ndarray: # If there isn't a previous prediction
         # Pick bounding box with largest area
         biggest = max(preds, key=lambda x: (x[2]-x[0])*(x[3]-x[1]))
